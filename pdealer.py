@@ -15,9 +15,9 @@ class PokerDealer:
 	waitingPlayers = []
 	# Send card acknowledges
 	sendCardAcks = []
-	# Port of the Dealer
+	# Port of the dealer
 	dPort = 0
-	# Sending socket of the Dealer
+	# Sending socket of the dealer
 	sSocket = None
 
 	def __init__(self, dPort, sSocket):

@@ -1,7 +1,6 @@
 import socket
 import sys
-from phand import PokerHand
-from pprotocol import PokerProtocol
+from pplayer import PokerPlayer
 import jsonpickle
 
 host = 'localhost'
@@ -10,13 +9,22 @@ dealerPort = 50000
 size = 1024
 backlog = 5
 
+# Receiving socket
+rSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+rSocket.bind((host,myPort))
+rSocket.listen(backlog)
 # Sending socket
 sSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sSocket.connect((host,dealerPort))
+# Player object
+player = PokerPlayer(dealerPort, myPort, host, sSocket)
 
-# Play request
-playReq = PokerProtocol("PLRQ", myPort)
-sSocket.send(jsonpickle.encode(playReq).encode())
+while 1:
+    client, address = rSocket.accept()
+    jsonStr = client.recv(size).decode()
+    jsonObj = jsonpickle.decode(jsonStr)
+    client.close()
+    player.resolve(jsonObj)
 
 
 """s.send('Hello, world')

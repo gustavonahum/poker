@@ -2,7 +2,6 @@ import socket
 from phand import PokerHand
 from pprotocol import PokerProtocol
 import jsonpickle
-import curses
 
 class PokerPlayer:
 	# State of player
@@ -13,42 +12,52 @@ class PokerPlayer:
 	dPort = 0
 	# Port of the player
 	pPort = 0
+	# Host
+	host = 0
 	# Sending socket of the player
 	sSocket = None
 
-	def __init__(self, dPort, pPort, sSocket):
+	def __init__(self, dPort, pPort, host, sSocket):
 		self.dPort = dPort
 		self.pPort = pPort
+		self.host = host
 		self.sSocket = sSocket
+		playReq = PokerProtocol("PLRQ", self.pPort)
+		self.sSocket.send(jsonpickle.encode(playReq).encode())
+		self.sSocket.close()
+		self.sSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 	def resolve(self, jsonObj):
 		# Play response
 		if jsonObj.messageCode == "PLRP":
 			self.isPlaying = True
+			print("I am playing in this round")
 		# Play wait response
 		if jsonObj.messageCode == "PLWR":
 			self.isPlaying = False
-		# 
-		# Start now request
-		elif jsonObj.messageCode == "SNRQ":
-			# Game still hasn't started
-			if state == "before-game":
-				# If there are enough players, start now
-				if len(players) >= 2:
-					self.state = "on-game"
-					self.sendCards()
-				# Else, wait a little more
-				else:
-					self.sendStartNowResponse(jsonObj.sendingProcessNumber)
-			# Game has already started: ignore
-			else:
-				pass
-		# Send card acknowledge
-		elif jsonObj.messageCode == "SNCA":
-			sendCardAcks.append(jsonObj.sendingProcessNumber)
-			# If dealer has received all acks
-			if len(sendCardAcks) == len(players):
-				self.checkHandsRequest()
-			# Else, wait a little more
-			else:
-				pass
+			print("I will be playing in the next round")
+		# Send card
+		if jsonObj.messageCode == "SNCD":
+			self.receiveCard(jsonObj)
+		if jsonObj.messageCode == "CHRQ":
+			self.checkHandResponse()
+
+	def receiveCard(self, jsonObj):
+		self.hand.append((jsonObj.cardValue, jsonObj.cardNipe))
+		print((jsonObj.cardValue, jsonObj.cardNipe))
+		self.checkHandSize(jsonObj.quantityOfMessages)
+
+	def checkHandSize(self, qMsg):
+		if len(self.hand) == qMsg:
+			self.sendCardAck()
+
+	def sendCardAck(self):
+		cardAck = PokerProtocol("SNCA",self.pPort)
+		self.sSocket.send(jsonpickle.encode(cardAck).encode())
+		self.sSocket.close()
+		self.sSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+	def checkHandResponse(self):
+		for card in hand:
+			(value, nipe) = card
+			checkHandResp = PokerProtocol("CHRP",self.pPort,value,nipe,"",5)

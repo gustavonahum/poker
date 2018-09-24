@@ -32,10 +32,9 @@ class PokerPlayer:
 		if jsonObj.messageCode == "PLRP":
 			self.isPlaying = True
 			print("I am playing in this round")
-		# Play wait response
-		if jsonObj.messageCode == "PLWR":
+		# Play refuse response
+		if jsonObj.messageCode == "PLRR":
 			self.isPlaying = False
-			print("I will be playing in the next round")
 		# Send card
 		if jsonObj.messageCode == "SNCD":
 			self.receiveCard(jsonObj)

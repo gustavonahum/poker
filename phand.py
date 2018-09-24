@@ -82,7 +82,7 @@ class PokerHand:
 		else:
 			for (value1, nipe1) in self.hand:
 				for (value2, nipe2) in self.hand:
-					if self.valueRepeats(value1, num1) and self.valueRepeats(value2, num2):
+					if self.valueRepeats(value1, num1) and self.valueRepeats(value2, num2) and value1 != value2:
 						return True
 			return False
 

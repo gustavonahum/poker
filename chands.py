@@ -42,9 +42,8 @@ class CompareHands():
 		category2 = pHand2.getCategory()
 		if self.betterCategoryThan(category1,category2):
 			return True
-		return False
-		#else:
-		#	return self.betterTieBreakerThan(hand1,hand2)
+		else:
+			return self.betterTieBreakerThan(hand1,hand2)
 
 
 	def betterCategoryThan(self, category1, category2):
@@ -194,7 +193,7 @@ class CompareHands():
 	def absoluteGreatestValue(self, hand):
 		(aGValue, nipe) = hand[0]
 		for (v, n) in hand:
-			if v > gValue:
+			if self.values.index(v) > self.values.index(aGValue):
 				aGValue = v
 		return aGValue
 
@@ -218,3 +217,8 @@ class CompareHands():
 			if v == value:
 				hand.remove((v, n))
 				return
+
+"""for i in range(1):
+	print(i)
+c = CompareHands([])
+print(c.betterThan([('9','E'),('J','E'),('Q','P'),('J','C'),('Q','O')], [('A','P'),('9','C'),('A','C'),('K','E'),('10','E')]))"""

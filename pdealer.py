@@ -17,8 +17,6 @@ class PokerDealer:
 	nPlayers = 0
 	# List of players of this round
 	players = []
-	# List of players that are waiting to play in the next round
-	waitingPlayers = []
 	# Send card acknowledges
 	sendCardAcks = []
 	# Hands of players
@@ -45,7 +43,7 @@ class PokerDealer:
 			if self.state == "before-game":
 				self.sendPlayResponse(jsonObj.sendingProcessNumber)
 			else:
-				self.sendWaitResponse(jsonObj.sendingProcessNumber)
+				self.sendRefuseResponse(jsonObj.sendingProcessNumber)
 		# Send card acknowledge
 		elif jsonObj.messageCode == "SNCA":
 			self.sendCardAcks.append(jsonObj.sendingProcessNumber)
@@ -72,13 +70,12 @@ class PokerDealer:
 		self.players.append(player)
 		self.checkIfGameCanStart()
 
-	def sendWaitResponse(self, player):
-		playWaitResp = PokerProtocol("PLWR", self.dPort)
+	def sendRefuseResponse(self, player):
+		playRefuseResp = PokerProtocol("PLRR", self.dPort)
 		self.sSocket.connect((self.host,player))
-		self.sSocket.send(jsonpickle.encode(playWaitResp).encode())
+		self.sSocket.send(jsonpickle.encode(playRefuseResp).encode())
 		self.sSocket.close()
 		self.sSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		waitingPlayers.append(player)
 
 	def checkIfGameCanStart(self):
 		if len(self.players) == self.nPlayers:
@@ -131,12 +128,14 @@ class PokerDealer:
 				self.sSocket.close()
 				self.sSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+		self.state = "before-game"
+
 
 
 	"""Auxiliary methods"""
 	def initializeDeck(self):
 		# From "2" to "A"
-		values = ["2","3","4","5","6","7","8","9","10","J","Q","K","A"]
+		values = ["7","8","9","10","J","Q","K","A"]
 		# "Paus", "Copas", "Espadas", "Ouros"
 		nipes = ["P","C","E","O"]
 		for v in values:

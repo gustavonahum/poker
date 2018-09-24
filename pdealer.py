@@ -119,13 +119,11 @@ class PokerDealer:
 			self.evaluateWinner()
 
 	def evaluateWinner(self):
-		print("chegou ao evaluate")
-		cHandObj = CompareHands(hands)
+		cHandObj = CompareHands(self.hands)
 		winningHands = cHandObj.resolveBestHand()
 
-		for hand in winningHands:
+		for winner in winningHands:
 			for player in self.players:
-				winner = self.findWinner(hand)
 				notifyGameResult = PokerProtocol("NTGR", self.dPort, "", "", winner, len(winningHands))
 				self.sSocket.connect((self.host,player))
 				self.sSocket.send(jsonpickle.encode(notifyGameResult).encode())

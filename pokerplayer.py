@@ -25,9 +25,3 @@ while 1:
     jsonObj = jsonpickle.decode(jsonStr)
     client.close()
     player.resolve(jsonObj)
-
-
-"""s.send('Hello, world')
-data = s.recv(size)
-s.close()
-print("Received: %s" % data)"""

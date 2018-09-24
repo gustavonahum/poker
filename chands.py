@@ -1,5 +1,6 @@
 from phand import PokerHand
 from collections import defaultdict
+import copy
 
 class CompareHands():
 	# Hands of players
@@ -14,19 +15,20 @@ class CompareHands():
 		self.initializeCategoryOrder()
 
 	def resolveBestHand(self):
+		handsCopy = copy.deepcopy(self.hands)
 		eliminated = True
 		while eliminated:
 			eliminated = False
-			for hand1 in self.hands:
-				if self.betterThanSomeHand(hand1):
+			for hand1 in handsCopy:
+				if self.betterThanSomeHand(hand1, handsCopy):
 					eliminated = True
 					break
-		return hands
+		return handsCopy
 
-	def betterThanSomeHand(self, hand1):
-		for hand2 in self.hands:
+	def betterThanSomeHand(self, hand1, handsCopy):
+		for hand2 in handsCopy:
 			if self.betterThan(hand1, hand2):
-				self.hands.remove(hand2)
+				handsCopy.remove(hand2)
 				return True
 		return False
 
@@ -40,8 +42,9 @@ class CompareHands():
 		category2 = pHand2.getCategory()
 		if self.betterCategoryThan(category1,category2):
 			return True
-		else:
-			return self.betterTieBreakerThan(hand1,hand2)
+		return False
+		#else:
+		#	return self.betterTieBreakerThan(hand1,hand2)
 
 
 	def betterCategoryThan(self, category1, category2):
@@ -135,7 +138,7 @@ class CompareHands():
 	"""Auxiliary methods"""
 	def initializeHands(self, hands):
 		for hand in hands:
-			self.hands.append(hand)
+			self.hands.append(hands[hand])
 
 	def initializeCategoryOrder(self):
 		self.categoryOrder.append("High Card")

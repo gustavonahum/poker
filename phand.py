@@ -135,23 +135,23 @@ class PokerHand:
 		return True
 
 	def getCategory(self):
-		if isRoyalFlush():
+		if self.isRoyalFlush():
 			return "Royal Flush"
-		if isStraightFlush():
+		if self.isStraightFlush():
 			return "Straight Flush"
-		if isFourOfAKind():
+		if self.isFourOfAKind():
 			return "Four of a Kind"
-		if isFullHouse():
+		if self.isFullHouse():
 			return "Full House"
-		if isFlush():
+		if self.isFlush():
 			return "Flush"
-		if isStraight():
+		if self.isStraight():
 			return "Straight"
-		if isThreeOfAKind():
+		if self.isThreeOfAKind():
 			return "Three of a Kind"
-		if isTwoPair():
+		if self.isTwoPair():
 			return "Two Pair"
-		if isOnePair():
+		if self.isOnePair():
 			return "One Pair"
 		return "High Card"
 

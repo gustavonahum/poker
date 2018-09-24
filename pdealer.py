@@ -5,9 +5,8 @@ import jsonpickle
 from random import shuffle
 import time
 from collections import defaultdict
+from chands import CompareHands
 
-def nop():
-	pass
 
 class PokerDealer:
 	# State of the game
@@ -16,8 +15,6 @@ class PokerDealer:
 	deck = []
 	# Number of players
 	nPlayers = 0
-	# Number of cards for each player
-	nCards = 5
 	# List of players of this round
 	players = []
 	# List of players that are waiting to play in the next round
@@ -51,9 +48,9 @@ class PokerDealer:
 				self.sendWaitResponse(jsonObj.sendingProcessNumber)
 		# Send card acknowledge
 		elif jsonObj.messageCode == "SNCA":
-			sendCardAcks.append(jsonObj.sendingProcessNumber)
+			self.sendCardAcks.append(jsonObj.sendingProcessNumber)
 			# If dealer has received all acks
-			if len(sendCardAcks) == len(self.players):
+			if len(self.sendCardAcks) == len(self.players):
 				self.checkHandsRequest()
 			# Else, wait a little more
 			else:
@@ -67,7 +64,7 @@ class PokerDealer:
 
 	def sendPlayResponse(self, player):
 		playResp = PokerProtocol("PLRP", self.dPort)
-		print(player)
+		print("New player in this round: " + str(player))
 		self.sSocket.connect((self.host,player))
 		self.sSocket.send(jsonpickle.encode(playResp).encode())
 		self.sSocket.close()
@@ -85,19 +82,18 @@ class PokerDealer:
 
 	def checkIfGameCanStart(self):
 		if len(self.players) == self.nPlayers:
-			print(True)
 			self.state = "on-game"
 			self.sendCards()
 
 	def sendCards(self):
-		for c in range(self.nCards):
+		for c in range(5):
 			for player in self.players:
 				self.sendCardToPlayer(self.deck.pop(),player)
 				time.sleep(1)
 
 	def sendCardToPlayer(self, card, player):
 		(value,nipe) = card
-		sendCard = PokerProtocol("SNCD", self.dPort, value, nipe, "", self.nCards)
+		sendCard = PokerProtocol("SNCD", self.dPort, value, nipe, "", 5)
 		self.sSocket.connect((self.host,player))
 		self.sSocket.send(jsonpickle.encode(sendCard).encode())
 		self.sSocket.close()
@@ -116,14 +112,25 @@ class PokerDealer:
 		self.checkHandsReceived()
 
 	def checkHandsReceived(self):
-		if len(self.hands == len(self.players)):
+		if len(self.hands) == len(self.players):
 			for hand in self.hands:
-				if len(hand) < self.nCards:
+				if len(self.hands[hand]) < 5:
 					return
-			self.checkWinner()
+			self.evaluateWinner()
 
-	def checkWinner(self):
-		pass
+	def evaluateWinner(self):
+		print("chegou ao evaluate")
+		cHandObj = CompareHands(hands)
+		winningHands = cHandObj.resolveBestHand()
+
+		for hand in winningHands:
+			for player in self.players:
+				winner = self.findWinner(hand)
+				notifyGameResult = PokerProtocol("NTGR", self.dPort, "", "", winner, len(winningHands))
+				self.sSocket.connect((self.host,player))
+				self.sSocket.send(jsonpickle.encode(notifyGameResult).encode())
+				self.sSocket.close()
+				self.sSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 
 
@@ -140,5 +147,10 @@ class PokerDealer:
 
 	def shuffleDeck(self):
 		shuffle(self.deck)
+
+	def findWinner(self, hand):
+		for player in players:
+			if self.hands[player] == hand:
+				return player
 
 

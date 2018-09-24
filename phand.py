@@ -6,7 +6,7 @@ class PokerHand:
 		self.hand = hand
 
 
-	"""Main functions"""
+	"""Main methods"""
 	def isRoyalFlush(self):
 		# Evaluates if hand is Royal Flush
 		if self.isStraightFlush() and self.highestValue() == "A":
@@ -60,6 +60,15 @@ class PokerHand:
 		if self.repetitionsInHand(2):
 			return True
 		return False
+
+	def highestValue(self):
+		# Returns the highest value in the hand
+		(value, nipe) = self.hand[0]
+		highest = value
+		for (v, n) in self.hand:
+			if self.values.index(v) > self.values.index(highest):
+				highest = v
+		return highest
 
 
 	"""Auxiliary functions"""
@@ -125,11 +134,24 @@ class PokerHand:
 				return False
 		return True
 
-	def highestValue(self):
-		# Returns the highest value in the hand
-		(value, nipe) = self.hand[0]
-		highest = value
-		for (v, n) in self.hand:
-			if self.values.index(v) > self.values.index(highest):
-				highest = v
-		return highest
+	def getCategory(self):
+		if isRoyalFlush():
+			return "Royal Flush"
+		if isStraightFlush():
+			return "Straight Flush"
+		if isFourOfAKind():
+			return "Four of a Kind"
+		if isFullHouse():
+			return "Full House"
+		if isFlush():
+			return "Flush"
+		if isStraight():
+			return "Straight"
+		if isThreeOfAKind():
+			return "Three of a Kind"
+		if isTwoPair():
+			return "Two Pair"
+		if isOnePair():
+			return "One Pair"
+		return "High Card"
+

@@ -45,7 +45,7 @@ class PokerPlayer:
 	def receiveCard(self, jsonObj):
 		self.hand.append((jsonObj.cardValue, jsonObj.cardNipe))
 		print((jsonObj.cardValue, jsonObj.cardNipe))
-		self.checkHandSize(jsonObj.quantityOfMessages)
+		self.checkHandSize(int(jsonObj.quantityOfMessages))
 
 	def checkHandSize(self, qMsg):
 		if len(self.hand) == qMsg:
@@ -53,11 +53,16 @@ class PokerPlayer:
 
 	def sendCardAck(self):
 		cardAck = PokerProtocol("SNCA",self.pPort)
+		self.sSocket.connect((self.host,self.dPort))
 		self.sSocket.send(jsonpickle.encode(cardAck).encode())
 		self.sSocket.close()
 		self.sSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 	def checkHandResponse(self):
-		for card in hand:
+		for card in self.hand:
 			(value, nipe) = card
 			checkHandResp = PokerProtocol("CHRP",self.pPort,value,nipe,"",5)
+			self.sSocket.connect((self.host,self.dPort))
+			self.sSocket.send(jsonpickle.encode(checkHandResp).encode())
+			self.sSocket.close()
+			self.sSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

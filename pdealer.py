@@ -122,8 +122,9 @@ class PokerDealer:
 		cHandObj = CompareHands(self.hands)
 		winningHands = cHandObj.resolveBestHand()
 
-		for winner in winningHands:
+		for hand in winningHands:
 			for player in self.players:
+				winner = self.findWinner(hand)
 				notifyGameResult = PokerProtocol("NTGR", self.dPort, "", "", winner, len(winningHands))
 				self.sSocket.connect((self.host,player))
 				self.sSocket.send(jsonpickle.encode(notifyGameResult).encode())
@@ -147,7 +148,7 @@ class PokerDealer:
 		shuffle(self.deck)
 
 	def findWinner(self, hand):
-		for player in players:
+		for player in self.players:
 			if self.hands[player] == hand:
 				return player
 

@@ -39,8 +39,12 @@ class PokerPlayer:
 		# Send card
 		if jsonObj.messageCode == "SNCD":
 			self.receiveCard(jsonObj)
+		# Check hand
 		if jsonObj.messageCode == "CHRQ":
 			self.checkHandResponse()
+		# Notify players of the winner:
+		if jsonObj.messageCode == "NTGR":
+			self.printWinner(jsonObj)
 
 	def receiveCard(self, jsonObj):
 		self.hand.append((jsonObj.cardValue, jsonObj.cardNipe))
@@ -66,3 +70,6 @@ class PokerPlayer:
 			self.sSocket.send(jsonpickle.encode(checkHandResp).encode())
 			self.sSocket.close()
 			self.sSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+	def printWinner(self, jsonObj):
+		print("The winner was: " + str(jsonObj.winningProcessNumber))

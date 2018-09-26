@@ -13,11 +13,9 @@ backlog = 5
 rSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 rSocket.bind((host,myPort))
 rSocket.listen(backlog)
-# Sending socket
-sSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sSocket.connect((host,dealerPort))
+
 # Player object
-player = PokerPlayer(dealerPort, myPort, host, sSocket)
+player = PokerPlayer(dealerPort, myPort, host)
 
 while 1:
     client, address = rSocket.accept()

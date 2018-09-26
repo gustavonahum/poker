@@ -9,25 +9,20 @@ class PokerPlayer:
 	# Player hand
 	hand = []
 	# Port of the dealer
-	dPort = 0
+	dealerPort = 0
 	# Port of the player
-	pPort = 0
+	playerPort = 0
 	# Host
 	host = 0
-	# Sending socket of the player
-	sSocket = None
 	# Number of winners received
 	wCount = 0
 
-	def __init__(self, dPort, pPort, host, sSocket):
-		self.dPort = dPort
-		self.pPort = pPort
+	def __init__(self, dealerPort, playerPort, host):
+		self.dealerPort = dealerPort
+		self.playerPort = playerPort
 		self.host = host
-		self.sSocket = sSocket
-		playReq = PokerProtocol("PLRQ", self.pPort)
-		self.sSocket.send(jsonpickle.encode(playReq).encode())
-		self.sSocket.close()
-		self.sSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		playReq = PokerProtocol("PLRQ", self.playerPort)
+		self.sendMessage(playReq)
 
 	def resolve(self, jsonObj):
 		# Play response
@@ -55,27 +50,24 @@ class PokerPlayer:
 			self.sendCardAck()
 
 	def sendCardAck(self):
-		cardAck = PokerProtocol("SNCA",self.pPort)
-		self.sSocket.connect((self.host,self.dPort))
-		self.sSocket.send(jsonpickle.encode(cardAck).encode())
-		self.sSocket.close()
-		self.sSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		cardAck = PokerProtocol("SNCA",self.playerPort)
+		self.sendMessage(cardAck)
 
 	def checkHandResponse(self):
 		for card in self.hand:
 			(value, nipe) = card
-			checkHandResp = PokerProtocol("CHRP",self.pPort,value,nipe,"",5)
-			self.sSocket.connect((self.host,self.dPort))
-			self.sSocket.send(jsonpickle.encode(checkHandResp).encode())
-			self.sSocket.close()
-			self.sSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			checkHandResp = PokerProtocol("CHRP",self.playerPort,value,nipe,"",5)
+			self.sendMessage(checkHandResp)
 
 	def printWinner(self, jsonObj):
 		print("The winner was: " + str(jsonObj.winningProcessNumber))
 
 	def sendEndOfGame(self):
-		endOfGame = PokerProtocol("EOGM",self.pPort)
-		self.sSocket.connect((self.host,self.dPort))
-		self.sSocket.send(jsonpickle.encode(endOfGame).encode())
-		self.sSocket.close()
-		self.sSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		endOfGame = PokerProtocol("EOGM",self.playerPort)
+		self.sendMessage(endOfGame)
+
+	def sendMessage(self,msgObj):
+		sSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		sSocket.connect((self.host,self.dealerPort))
+		sSocket.send(jsonpickle.encode(msgObj).encode())
+		sSocket.close()

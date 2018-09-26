@@ -131,7 +131,6 @@ class CompareHands():
 	def betterTieBreakerInOnePair(self, hand1, hand2):
 		h1Copy = copy.deepcopy(hand1)
 		h2Copy = copy.deepcopy(hand2)
-		print(h1Copy)
 		p1 = self.values.index(self.valueOfHighestPair(h1Copy))
 		p2 = self.values.index(self.valueOfHighestPair(h2Copy))
 		if p1 > p2:

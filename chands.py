@@ -192,6 +192,8 @@ class CompareHands():
 			g2 = self.values.index(self.greatestValue(hand2, i))
 			if g1 > g2:
 				return True
+			if g1 < g2:
+				return False
 		return False
 
 	def greatestValue(self, hand, num):
@@ -230,6 +232,3 @@ class CompareHands():
 			if v == value:
 				hand.remove((v, n))
 				return
-
-"""c = CompareHands([])
-print(c.betterTieBreakerInOnePair([('A','C'),('8','P'),('9','C'),('K','E'),('9','E')], [('J','P'),('7','E'),('K','O'),('J','E'),('10','E')]))"""

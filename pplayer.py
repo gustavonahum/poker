@@ -16,6 +16,8 @@ class PokerPlayer:
 	host = 0
 	# Sending socket of the player
 	sSocket = None
+	# Number of winners received
+	wCount = 0
 
 	def __init__(self, dPort, pPort, host, sSocket):
 		self.dPort = dPort
@@ -32,9 +34,6 @@ class PokerPlayer:
 		if jsonObj.messageCode == "PLRP":
 			self.isPlaying = True
 			print("I am playing in this round")
-		# Play refuse response
-		if jsonObj.messageCode == "PLRR":
-			self.isPlaying = False
 		# Send card
 		if jsonObj.messageCode == "SNCD":
 			self.receiveCard(jsonObj)
@@ -44,14 +43,15 @@ class PokerPlayer:
 		# Notify players of the winner:
 		if jsonObj.messageCode == "NTGR":
 			self.printWinner(jsonObj)
+			self.wCount += 1
+			if self.wCount == jsonObj.quantityOfMessages:
+				self.sendEndOfGame()
+			
 
 	def receiveCard(self, jsonObj):
 		self.hand.append((jsonObj.cardValue, jsonObj.cardNipe))
 		print((jsonObj.cardValue, jsonObj.cardNipe))
-		self.checkHandSize(int(jsonObj.quantityOfMessages))
-
-	def checkHandSize(self, qMsg):
-		if len(self.hand) == qMsg:
+		if len(self.hand) == jsonObj.quantityOfMessages:
 			self.sendCardAck()
 
 	def sendCardAck(self):
@@ -72,3 +72,10 @@ class PokerPlayer:
 
 	def printWinner(self, jsonObj):
 		print("The winner was: " + str(jsonObj.winningProcessNumber))
+
+	def sendEndOfGame(self):
+		endOfGame = PokerProtocol("EOGM",self.pPort)
+		self.sSocket.connect((self.host,self.dPort))
+		self.sSocket.send(jsonpickle.encode(endOfGame).encode())
+		self.sSocket.close()
+		self.sSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

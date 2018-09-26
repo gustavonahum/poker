@@ -25,16 +25,13 @@ class PokerDealer:
 	dPort = 0
 	# Host
 	host = 0
-	# Sending socket of the dealer
-	sSocket = None
 
-	def __init__(self, nPlayers, host, dPort, sSocket):
+	def __init__(self, nPlayers, host, dPort):
 		self.state = "before-game"
 		self.initializeDeck()
 		self.nPlayers = nPlayers
 		self.host = host
 		self.dPort = dPort
-		self.sSocket = sSocket
 		self.hands = defaultdict(list)
 
 	def resolve(self, jsonObj):
@@ -59,23 +56,16 @@ class PokerDealer:
 
 
 
-
 	def sendPlayResponse(self, player):
 		playResp = PokerProtocol("PLRP", self.dPort)
+		self.sendMessage(player,playResp)
 		print("New player in this round: " + str(player))
-		self.sSocket.connect((self.host,player))
-		self.sSocket.send(jsonpickle.encode(playResp).encode())
-		self.sSocket.close()
-		self.sSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.players.append(player)
 		self.checkIfGameCanStart()
 
 	def sendRefuseResponse(self, player):
 		playRefuseResp = PokerProtocol("PLRR", self.dPort)
-		self.sSocket.connect((self.host,player))
-		self.sSocket.send(jsonpickle.encode(playRefuseResp).encode())
-		self.sSocket.close()
-		self.sSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.sendMessage(player,playRefuseResp)
 
 	def checkIfGameCanStart(self):
 		if len(self.players) == self.nPlayers:
@@ -91,18 +81,12 @@ class PokerDealer:
 	def sendCardToPlayer(self, card, player):
 		(value,nipe) = card
 		sendCard = PokerProtocol("SNCD", self.dPort, value, nipe, "", 5)
-		self.sSocket.connect((self.host,player))
-		self.sSocket.send(jsonpickle.encode(sendCard).encode())
-		self.sSocket.close()
-		self.sSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.sendMessage(player,sendCard)
 
 	def checkHandsRequest(self):
 		for player in self.players:
 			checkHandReq = PokerProtocol("CHRQ", self.dPort)
-			self.sSocket.connect((self.host,player))
-			self.sSocket.send(jsonpickle.encode(checkHandReq).encode())
-			self.sSocket.close()
-			self.sSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			self.sendMessage(player,checkHandReq)
 
 	def storePlayerHand(self,jsonObj):
 		self.hands[jsonObj.sendingProcessNumber].append((jsonObj.cardValue,jsonObj.cardNipe))
@@ -123,11 +107,7 @@ class PokerDealer:
 			for player in self.players:
 				winner = self.findWinner(hand)
 				notifyGameResult = PokerProtocol("NTGR", self.dPort, "", "", winner, len(winningHands))
-				self.sSocket.connect((self.host,player))
-				self.sSocket.send(jsonpickle.encode(notifyGameResult).encode())
-				self.sSocket.close()
-				self.sSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
+				self.sendMessage(player,notifyGameResult)
 		self.state = "before-game"
 
 
@@ -151,4 +131,8 @@ class PokerDealer:
 			if self.hands[player] == hand:
 				return player
 
-
+	def sendMessage(self,player,msgObj):
+		sSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		sSocket.connect((self.host,player))
+		sSocket.send(jsonpickle.encode(msgObj).encode())
+		sSocket.close()

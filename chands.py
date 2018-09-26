@@ -20,14 +20,26 @@ class CompareHands():
 		while eliminated:
 			eliminated = False
 			for hand1 in handsCopy:
-				if self.betterThanSomeHand(hand1, handsCopy):
+				if self.betterCategoryThanSomeHand(hand1, handsCopy):
 					eliminated = True
 					break
+			if not eliminated:
+				for hand1 in handsCopy:
+					if self.betterTieBreakerThanSomeHand(hand1, handsCopy):
+						eliminated = True
+						break
 		return handsCopy
 
-	def betterThanSomeHand(self, hand1, handsCopy):
+	def betterCategoryThanSomeHand(self, hand1, handsCopy):
 		for hand2 in handsCopy:
-			if self.betterThan(hand1, hand2):
+			if self.betterCategoryThan(hand1, hand2):
+				handsCopy.remove(hand2)
+				return True
+		return False
+
+	def betterTieBreakerThanSomeHand(self, hand1, handsCopy):
+		for hand2 in handsCopy:
+			if self.betterTieBreakerThan(hand1, hand2):
 				handsCopy.remove(hand2)
 				return True
 		return False
@@ -35,21 +47,15 @@ class CompareHands():
 
 
 	# Evaluates if hand1 is better than hand2
-	def betterThan(self, hand1, hand2):
+	def betterCategoryThan(self, hand1, hand2):
 		pHand1 = PokerHand(hand1)
 		pHand2 = PokerHand(hand2)
 		category1 = pHand1.getCategory()
 		category2 = pHand2.getCategory()
-		if self.betterCategoryThan(category1,category2):
-			return True
-		else:
-			return self.betterTieBreakerThan(hand1,hand2)
-
-
-	def betterCategoryThan(self, category1, category2):
 		index1 = self.categoryOrder.index(category1)
 		index2 = self.categoryOrder.index(category2)
 		return index1 > index2
+
 
 	def betterTieBreakerThan(self, hand1, hand2):
 		pHand1 = PokerHand(hand1)
@@ -104,6 +110,8 @@ class CompareHands():
 		p2 = self.values.index(self.valueOfHighestPair(h2Copy))
 		if p1 > p2:
 			return True
+		if p1 < p2:
+			return False
 		for i in range(2):
 			self.removePair(h1Copy, p1)
 			self.removePair(h2Copy, p2)
@@ -111,6 +119,8 @@ class CompareHands():
 		p2 = self.values.index(self.valueOfHighestPair(h2Copy))
 		if p1 > p2:
 			return True
+		if p1 < p2:
+			return False
 		for i in range(2):
 			self.removePair(h1Copy, p1)
 			self.removePair(h2Copy, p2)
@@ -121,10 +131,13 @@ class CompareHands():
 	def betterTieBreakerInOnePair(self, hand1, hand2):
 		h1Copy = copy.deepcopy(hand1)
 		h2Copy = copy.deepcopy(hand2)
+		print(h1Copy)
 		p1 = self.values.index(self.valueOfHighestPair(h1Copy))
 		p2 = self.values.index(self.valueOfHighestPair(h2Copy))
 		if p1 > p2:
 			return True
+		if p1 < p2:
+			return False
 		for i in range(2):
 			self.removePair(h1Copy, p1)
 			self.removePair(h2Copy, p2)
@@ -218,7 +231,5 @@ class CompareHands():
 				hand.remove((v, n))
 				return
 
-"""for i in range(1):
-	print(i)
-c = CompareHands([])
-print(c.betterThan([('9','E'),('J','E'),('Q','P'),('J','C'),('Q','O')], [('A','P'),('9','C'),('A','C'),('K','E'),('10','E')]))"""
+"""c = CompareHands([])
+print(c.betterTieBreakerInOnePair([('A','C'),('8','P'),('9','C'),('K','E'),('9','E')], [('J','P'),('7','E'),('K','O'),('J','E'),('10','E')]))"""

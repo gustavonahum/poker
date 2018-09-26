@@ -23,5 +23,13 @@ while 1:
     client, address = rSocket.accept()
     jsonStr = client.recv(size).decode()
     jsonObj = jsonpickle.decode(jsonStr)
-    client.close()
+
+    if jsonObj.messageCode == "EOGR":
+    	print("Exited the game")
+    	break
+    elif jsonObj.messageCode == "PLRR":
+    	print("Didn't enter the game")
+    	break
+
     player.resolve(jsonObj)
+    client.close()
